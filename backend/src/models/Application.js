@@ -23,6 +23,20 @@ const applicationSchema = new mongoose.Schema(
       type: String,
       default: "",
     },
+    candidateName: {
+  type: String,
+  default: "",
+},
+
+candidateEmail: {
+  type: String,
+  default: "",
+},
+
+candidatePhone: {
+  type: String,
+  default: "",
+},
 
     status: {
       type: String,
