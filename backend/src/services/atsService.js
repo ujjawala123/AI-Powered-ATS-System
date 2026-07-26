@@ -1,15 +1,23 @@
+const { extractSkills } = require("../utils/extractSkills");
+
 const calculateATSScore = (resumeText, requiredSkills = []) => {
   if (!resumeText) {
     throw new Error("Resume text is required.");
   }
 
-  const resume = resumeText.toLowerCase();
+  // Extract skills from resume
+  const resumeSkills = extractSkills(resumeText);
 
   const matchedSkills = [];
   const missingSkills = [];
 
   requiredSkills.forEach((skill) => {
-    if (resume.includes(skill.toLowerCase())) {
+    const found = resumeSkills.some(
+      (resumeSkill) =>
+        resumeSkill.toLowerCase() === skill.toLowerCase()
+    );
+
+    if (found) {
       matchedSkills.push(skill);
     } else {
       missingSkills.push(skill);
@@ -19,12 +27,15 @@ const calculateATSScore = (resumeText, requiredSkills = []) => {
   const atsScore =
     requiredSkills.length === 0
       ? 0
-      : Math.round((matchedSkills.length / requiredSkills.length) * 100);
+      : Math.round(
+          (matchedSkills.length / requiredSkills.length) * 100
+        );
 
   return {
     atsScore,
     matchedSkills,
     missingSkills,
+    resumeSkills,
   };
 };
 

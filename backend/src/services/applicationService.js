@@ -41,8 +41,15 @@ const applyForJob = async (jobId, applicantId, data, resumeFile) => {
   );
 
   // AI Summary (Temporary)
-  const aiSummary = `Resume matched ${atsResult.matchedSkills.length} out of ${job.skills.length} required skills.`;
+const aiSummary = `
+ATS Score: ${atsResult.atsScore}%
 
+Matched Skills:
+${atsResult.matchedSkills.join(", ") || "None"}
+
+Missing Skills:
+${atsResult.missingSkills.join(", ") || "None"}
+`.trim();
   // Create Application
   const application = await Application.create({
     candidate: applicantId,
