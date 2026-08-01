@@ -27,7 +27,7 @@ const Login = () => {
       localStorage.setItem("token", response.token);
       localStorage.setItem(
         "user",
-        JSON.stringify(response.user)
+        JSON.stringify(response.data)
       );
 
       toast.success("Login Successful!");

@@ -5,7 +5,7 @@ import MainLayout from "../layouts/MainLayout";
 import Landing from "../pages/Landing";
 import Login from "../pages/Login";
 import Register from "../pages/Register";
-
+import Dashboard from "../pages/Dashboard";
 const AppRoutes = () => {
   return (
     <Routes>
@@ -15,6 +15,8 @@ const AppRoutes = () => {
         <Route path="/login" element={<Login />} />
 
         <Route path="/register" element={<Register />} />
+        
+        <Route path="/dashboard" element={<Dashboard />} />
       </Route>
     </Routes>
   );
