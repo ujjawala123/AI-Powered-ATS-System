@@ -24,15 +24,28 @@ const Login = () => {
     try {
       const response = await login(formData);
 
+      // Save JWT Token
       localStorage.setItem("token", response.token);
+
+      // Save User Details
       localStorage.setItem(
         "user",
         JSON.stringify(response.data)
       );
 
-      toast.success("Login Successful!");
+      toast.success(response.message || "Login Successful!");
 
-      navigate("/dashboard");
+      // Redirect Based on Role
+      if (response.data.role === "applicant") {
+        navigate("/applicant/dashboard");
+      } else if (response.data.role === "recruiter") {
+        navigate("/recruiter/dashboard");
+      } else {
+        toast.error("Invalid user role.");
+        localStorage.removeItem("token");
+        localStorage.removeItem("user");
+        navigate("/login");
+      }
     } catch (error) {
       toast.error(
         error.response?.data?.message || "Login Failed"
@@ -43,18 +56,20 @@ const Login = () => {
   return (
     <div className="min-h-screen bg-[#0F0F10] flex items-center justify-center px-4">
       <div className="w-full max-w-md bg-zinc-900 rounded-2xl p-8 shadow-xl">
+
         <h1 className="text-3xl font-bold text-white text-center">
           Welcome Back
         </h1>
 
         <p className="text-zinc-400 text-center mt-2">
-          Login to your ATS account
+          Login to your AI ATS account
         </p>
 
         <form
           onSubmit={handleSubmit}
-          className="space-y-5 mt-8"
+          className="mt-8 space-y-5"
         >
+
           <div>
             <label className="text-zinc-300">
               Email
@@ -63,11 +78,11 @@ const Login = () => {
             <input
               type="email"
               name="email"
-              placeholder="Enter Email"
+              placeholder="Enter your email"
               value={formData.email}
               onChange={handleChange}
-              className="w-full mt-2 p-3 rounded-lg bg-zinc-800 border border-zinc-700 text-white outline-none focus:border-cyan-500"
               required
+              className="mt-2 w-full rounded-lg border border-zinc-700 bg-zinc-800 p-3 text-white outline-none focus:border-cyan-500"
             />
           </div>
 
@@ -79,23 +94,24 @@ const Login = () => {
             <input
               type="password"
               name="password"
-              placeholder="Enter Password"
+              placeholder="Enter your password"
               value={formData.password}
               onChange={handleChange}
-              className="w-full mt-2 p-3 rounded-lg bg-zinc-800 border border-zinc-700 text-white outline-none focus:border-cyan-500"
               required
+              className="mt-2 w-full rounded-lg border border-zinc-700 bg-zinc-800 p-3 text-white outline-none focus:border-cyan-500"
             />
           </div>
 
           <button
             type="submit"
-            className="w-full bg-cyan-500 hover:bg-cyan-600 text-white py-3 rounded-lg font-semibold transition"
+            className="w-full rounded-lg bg-cyan-500 py-3 font-semibold text-white transition hover:bg-cyan-600"
           >
             Login
           </button>
+
         </form>
 
-        <p className="text-center text-zinc-400 mt-6">
+        <p className="mt-6 text-center text-zinc-400">
           Don't have an account?{" "}
           <Link
             to="/register"
@@ -104,6 +120,7 @@ const Login = () => {
             Register
           </Link>
         </p>
+
       </div>
     </div>
   );
