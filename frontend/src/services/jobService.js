@@ -1,25 +1,57 @@
-import api from "./api";
+import axios from "axios";
 
-// Create Job
-export const createJob = async (data) => {
-  const response = await api.post("/jobs", data);
+const API = "http://localhost:5000/api/jobs";
+
+const getToken = () => {
+  return localStorage.getItem("token");
+};
+
+export const createJob = async (jobData) => {
+  const response = await axios.post(API, jobData, {
+    headers: {
+      Authorization: `Bearer ${getToken()}`,
+    },
+  });
+
   return response.data;
 };
 
-// Get Recruiter's Jobs
 export const getMyJobs = async () => {
-  const response = await api.get("/jobs/my-jobs");
+  const response = await axios.get(`${API}/my-jobs`, {
+    headers: {
+      Authorization: `Bearer ${getToken()}`,
+    },
+  });
+
   return response.data;
 };
 
-// Delete Job
 export const deleteJob = async (id) => {
-  const response = await api.delete(`/jobs/${id}`);
+  const response = await axios.delete(`${API}/${id}`, {
+    headers: {
+      Authorization: `Bearer ${getToken()}`,
+    },
+  });
+
   return response.data;
 };
 
-// Update Job
 export const updateJob = async (id, data) => {
-  const response = await api.put(`/jobs/${id}`, data);
+  const response = await axios.put(`${API}/${id}`, data, {
+    headers: {
+      Authorization: `Bearer ${getToken()}`,
+    },
+  });
+
+  return response.data;
+};
+
+export const getAllJobs = async () => {
+  const response = await axios.get(API);
+  return response.data;
+};
+
+export const getJobById = async (id) => {
+  const response = await axios.get(`${API}/${id}`);
   return response.data;
 };

@@ -1,9 +1,13 @@
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { useNavigate, useParams } from "react-router-dom";
 import { toast } from "react-toastify";
-import { createJob } from "../../services/jobService";
+import {
+  getJobById,
+  updateJob,
+} from "../../services/jobService";
 
-const PostJob = () => {
+const EditJob = () => {
+  const { id } = useParams();
   const navigate = useNavigate();
 
   const [job, setJob] = useState({
@@ -17,7 +21,29 @@ const PostJob = () => {
     skills: "",
     requirements: "",
     benefits: "",
+    status: "Open",
   });
+
+  useEffect(() => {
+    fetchJob();
+  }, []);
+
+  const fetchJob = async () => {
+    try {
+      const response = await getJobById(id);
+
+      const data = response.data;
+
+      setJob({
+        ...data,
+        skills: data.skills?.join(", ") || "",
+        requirements: data.requirements?.join("\n") || "",
+        benefits: data.benefits?.join("\n") || "",
+      });
+    } catch (error) {
+      toast.error("Unable to load job.");
+    }
+  };
 
   const handleChange = (e) => {
     setJob({
@@ -48,17 +74,15 @@ const PostJob = () => {
           .filter(Boolean),
       };
 
-      await createJob(payload);
+      await updateJob(id, payload);
 
-      toast.success("Job posted successfully!");
+      toast.success("Job updated successfully!");
 
       navigate("/recruiter/jobs");
-    } catch (err) {
-      console.error(err);
-
+    } catch (error) {
       toast.error(
-        err.response?.data?.message ||
-          "Unable to create job."
+        error.response?.data?.message ||
+          "Unable to update job."
       );
     }
   };
@@ -68,11 +92,11 @@ const PostJob = () => {
       <div className="max-w-4xl mx-auto bg-zinc-900 rounded-2xl p-8">
 
         <h1 className="text-3xl font-bold mb-2">
-          Post New Job
+          Edit Job
         </h1>
 
         <p className="text-zinc-400 mb-8">
-          Fill in the job details below.
+          Update your job details.
         </p>
 
         <form
@@ -88,10 +112,10 @@ const PostJob = () => {
               <input
                 type="text"
                 name="title"
-                required
                 value={job.title}
                 onChange={handleChange}
                 className="w-full mt-2 p-3 rounded-lg bg-zinc-800 border border-zinc-700"
+                required
               />
             </div>
 
@@ -101,10 +125,10 @@ const PostJob = () => {
               <input
                 type="text"
                 name="company"
-                required
                 value={job.company}
                 onChange={handleChange}
                 className="w-full mt-2 p-3 rounded-lg bg-zinc-800 border border-zinc-700"
+                required
               />
             </div>
 
@@ -114,10 +138,10 @@ const PostJob = () => {
               <input
                 type="text"
                 name="location"
-                required
                 value={job.location}
                 onChange={handleChange}
                 className="w-full mt-2 p-3 rounded-lg bg-zinc-800 border border-zinc-700"
+                required
               />
             </div>
 
@@ -143,10 +167,10 @@ const PostJob = () => {
               <input
                 type="text"
                 name="experience"
-                required
                 value={job.experience}
                 onChange={handleChange}
                 className="w-full mt-2 p-3 rounded-lg bg-zinc-800 border border-zinc-700"
+                required
               />
             </div>
 
@@ -170,10 +194,10 @@ const PostJob = () => {
             <textarea
               rows="5"
               name="description"
-              required
               value={job.description}
               onChange={handleChange}
               className="w-full mt-2 p-3 rounded-lg bg-zinc-800 border border-zinc-700"
+              required
             />
           </div>
 
@@ -213,11 +237,26 @@ const PostJob = () => {
             />
           </div>
 
+          <div>
+            <label>Status</label>
+
+            <select
+              name="status"
+              value={job.status}
+              onChange={handleChange}
+              className="w-full mt-2 p-3 rounded-lg bg-zinc-800 border border-zinc-700"
+            >
+              <option value="Open">Open</option>
+              <option value="Closed">Closed</option>
+              <option value="Archived">Archived</option>
+            </select>
+          </div>
+
           <button
             type="submit"
             className="bg-cyan-500 hover:bg-cyan-600 px-8 py-3 rounded-lg font-semibold"
           >
-            Publish Job
+            Save Changes
           </button>
 
         </form>
@@ -227,4 +266,4 @@ const PostJob = () => {
   );
 };
 
-export default PostJob;
+export default EditJob;
