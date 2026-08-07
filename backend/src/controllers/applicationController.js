@@ -1,6 +1,8 @@
 const applicationService = require("../services/applicationService");
 
+// ==========================
 // Apply for Job
+// ==========================
 const applyForJob = async (req, res) => {
   try {
     const result = await applicationService.applyForJob(
@@ -19,6 +21,27 @@ const applyForJob = async (req, res) => {
   }
 };
 
+// ==========================
+// Get Applicants By Job
+// ==========================
+const getApplicantsByJob = async (req, res) => {
+  try {
+    const result =
+      await applicationService.getApplicantsByJob(
+        req.params.jobId,
+        req.user._id
+      );
+
+    return res.status(200).json(result);
+  } catch (error) {
+    return res.status(400).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
 module.exports = {
   applyForJob,
+  getApplicantsByJob,
 };

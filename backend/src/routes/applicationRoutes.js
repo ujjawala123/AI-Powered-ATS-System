@@ -4,6 +4,7 @@ const router = express.Router();
 
 const {
   applyForJob,
+  getApplicantsByJob,
 } = require("../controllers/applicationController");
 
 const {
@@ -20,6 +21,14 @@ router.post(
   authorize("applicant"),
   upload.single("resume"),
   applyForJob
+);
+
+// Recruiter gets applicants for a job
+router.get(
+  "/job/:jobId",
+  protect,
+  authorize("recruiter"),
+  getApplicantsByJob
 );
 
 module.exports = router;

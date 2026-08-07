@@ -13,6 +13,7 @@ import PostJob from "../pages/recruiter/PostJob";
 import MyJobs from "../pages/recruiter/MyJobs";
 import ViewJob from "../pages/recruiter/ViewJob";
 import EditJob from "../pages/recruiter/EditJob";
+import Applicants from "../pages/recruiter/Applicants";
 
 import ProtectedRoute from "../components/ProtectedRoute"; // Change path if needed
 
@@ -80,6 +81,14 @@ const AppRoutes = () => {
             </ProtectedRoute>
           }
         />
+        <Route
+  path="/recruiter/jobs/:id/applicants"
+  element={
+    <ProtectedRoute allowedRole="recruiter">
+      <Applicants />
+    </ProtectedRoute>
+  }
+/>
       </Route>
     </Routes>
   );
