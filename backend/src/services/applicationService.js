@@ -1,4 +1,3 @@
-const mongoose = require("mongoose");
 const Application = require("../models/Application");
 const Job = require("../models/Job");
 
@@ -8,9 +7,9 @@ const {
   extractCandidateDetails,
 } = require("../utils/extractCandidateDetails");
 
-// ==========================
-// Apply for a Job
-// ==========================
+// =====================================================
+// Apply for Job
+// =====================================================
 const applyForJob = async (
   jobId,
   applicantId,
@@ -24,7 +23,7 @@ const applyForJob = async (
     throw new Error("Job not found.");
   }
 
-  // Prevent applying to closed jobs
+  // Check if job is open
   if (job.status !== "Open") {
     throw new Error("This job is no longer accepting applications.");
   }
@@ -41,21 +40,21 @@ const applyForJob = async (
     );
   }
 
-  // Parse Resume
+  // Parse resume
   const resumeText = resumeFile
     ? await parseResume(resumeFile)
     : "";
 
-  // Extract Candidate Details
+  // Extract candidate details
   const candidate = extractCandidateDetails(resumeText);
 
-  // Calculate ATS Score
+  // Calculate ATS score
   const atsResult = calculateATSScore(
     resumeText,
     job.skills || []
   );
 
-  // AI Summary
+  // Temporary AI summary
   const aiSummary = `
 ATS Score: ${atsResult.atsScore}%
 
@@ -64,29 +63,30 @@ ${atsResult.matchedSkills.join(", ") || "None"}
 
 Missing Skills:
 ${atsResult.missingSkills.join(", ") || "None"}
-`.trim();
+  `.trim();
 
-  // Create Application
+  // Create application
   const application = await Application.create({
     candidate: applicantId,
     job: jobId,
 
-    coverLetter: data.coverLetter || "",
+    coverLetter: data?.coverLetter || "",
 
     resumeURL: resumeFile
       ? `/uploads/resumes/${resumeFile.filename}`
       : "",
 
-    // Candidate Details
-    candidateName: candidate.name || "",
-    candidateEmail: candidate.email || "",
-    candidatePhone: candidate.phone || "",
+    candidateName: candidate?.name || "",
+    candidateEmail: candidate?.email || "",
+    candidatePhone: candidate?.phone || "",
 
-    // ATS Details
     matchScore: atsResult.atsScore,
     matchedSkills: atsResult.matchedSkills,
     missingSkills: atsResult.missingSkills,
+
     aiSummary,
+
+    status: "Applied",
   });
 
   return {
@@ -96,19 +96,14 @@ ${atsResult.missingSkills.join(", ") || "None"}
   };
 };
 
-// ==========================
+// =====================================================
 // Get Applicants By Job
-// ==========================
+// =====================================================
 const getApplicantsByJob = async (
   jobId,
   recruiterId
 ) => {
-  // Validate Job ID
-  if (!mongoose.Types.ObjectId.isValid(jobId)) {
-    throw new Error("Invalid job ID.");
-  }
-
-  // Check that the job belongs to this recruiter
+  // Make sure the job belongs to this recruiter
   const job = await Job.findOne({
     _id: jobId,
     postedBy: recruiterId,
@@ -116,18 +111,130 @@ const getApplicantsByJob = async (
 
   if (!job) {
     throw new Error(
-      "Job not found or you are not authorized to view its applicants."
+      "Job not found or you are not authorized to view applicants."
     );
   }
 
-  // Get applications
   const applications = await Application.find({
     job: jobId,
   })
-    .populate(
-      "candidate",
-      "name email"
-    )
+    .populate("candidate", "name email")
+    .populate("job", "title company")
+    .sort({ matchScore: -1, createdAt: -1 });
+
+  return {
+    success: true,
+    data: applications,
+  };
+};
+
+// =====================================================
+// Get Single Application By ID
+// =====================================================
+const getApplicationById = async (
+  applicationId,
+  userId,
+  userRole
+) => {
+  const application = await Application.findById(
+    applicationId
+  )
+    .populate("candidate", "name email")
+    .populate("job", "title company postedBy");
+
+  if (!application) {
+    throw new Error("Application not found.");
+  }
+
+  // Recruiter can only view applications
+  // belonging to their own jobs
+  if (userRole === "recruiter") {
+    if (
+      !application.job ||
+      application.job.postedBy.toString() !==
+        userId.toString()
+    ) {
+      throw new Error(
+        "You are not authorized to view this application."
+      );
+    }
+  }
+
+  // Applicant can only view their own application
+  if (userRole === "applicant") {
+    if (
+      application.candidate._id.toString() !==
+      userId.toString()
+    ) {
+      throw new Error(
+        "You are not authorized to view this application."
+      );
+    }
+  }
+
+  return {
+    success: true,
+    data: application,
+  };
+};
+
+// =====================================================
+// Update Application Status
+// =====================================================
+const updateApplicationStatus = async (
+  applicationId,
+  status,
+  recruiterId
+) => {
+  const allowedStatuses = [
+    "Applied",
+    "Shortlisted",
+    "Interview",
+    "Offered",
+    "Rejected",
+  ];
+
+  if (!allowedStatuses.includes(status)) {
+    throw new Error("Invalid application status.");
+  }
+
+  const application = await Application.findById(
+    applicationId
+  ).populate("job", "title company postedBy");
+
+  if (!application) {
+    throw new Error("Application not found.");
+  }
+
+  // Check recruiter owns the job
+  if (
+    application.job.postedBy.toString() !==
+    recruiterId.toString()
+  ) {
+    throw new Error(
+      "You are not authorized to update this application."
+    );
+  }
+
+  application.status = status;
+
+  await application.save();
+
+  return {
+    success: true,
+    message: "Application status updated successfully.",
+    data: application,
+  };
+};
+
+// =====================================================
+// Get Applicant's Applications
+// =====================================================
+const getMyApplications = async (applicantId) => {
+  const applications = await Application.find({
+    candidate: applicantId,
+  })
+    .populate("job", "title company location employmentType")
     .sort({ createdAt: -1 });
 
   return {
@@ -136,7 +243,13 @@ const getApplicantsByJob = async (
   };
 };
 
+// =====================================================
+// Export
+// =====================================================
 module.exports = {
   applyForJob,
   getApplicantsByJob,
+  getApplicationById,
+  updateApplicationStatus,
+  getMyApplications,
 };

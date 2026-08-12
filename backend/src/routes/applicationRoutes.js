@@ -5,6 +5,7 @@ const router = express.Router();
 const {
   applyForJob,
   getApplicantsByJob,
+  getApplicationById,
 } = require("../controllers/applicationController");
 
 const {
@@ -14,7 +15,9 @@ const {
 
 const upload = require("../middleware/uploadMiddleware");
 
+// =====================================================
 // Applicant applies to a job
+// =====================================================
 router.post(
   "/apply/:jobId",
   protect,
@@ -23,12 +26,24 @@ router.post(
   applyForJob
 );
 
+// =====================================================
 // Recruiter gets applicants for a job
+// =====================================================
 router.get(
   "/job/:jobId",
   protect,
   authorize("recruiter"),
   getApplicantsByJob
+);
+
+// =====================================================
+// Recruiter gets single application
+// =====================================================
+router.get(
+  "/:id",
+  protect,
+  authorize("recruiter"),
+  getApplicationById
 );
 
 module.exports = router;

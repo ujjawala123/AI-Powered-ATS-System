@@ -1,40 +1,35 @@
 const fs = require("fs");
-const path = require("path");
-const pdf = require("pdf-parse");
-const mammoth = require("mammoth");
+const { PDFParse } = require("pdf-parse");
 
-const parseResume = async (file) => {
-  if (!file) {
-    throw new Error("Resume file is required.");
+// ==========================================
+// Parse Resume
+// ==========================================
+
+const parseResume = async (resumeFile) => {
+  if (!resumeFile) {
+    return "";
   }
 
-  const filePath = path.resolve(file.path);
-  const extension = path.extname(file.originalname).toLowerCase();
+  try {
+    // Read uploaded PDF
+    const buffer = fs.readFileSync(resumeFile.path);
 
-  let resumeText = "";
+    // Create PDF parser
+    const parser = new PDFParse({
+      data: buffer,
+    });
 
-  switch (extension) {
-    case ".pdf": {
-      const buffer = fs.readFileSync(filePath);
-      const data = await pdf(buffer);
-      resumeText = data.text;
-      break;
-    }
+    // Extract text
+    const result = await parser.getText();
 
-    case ".docx": {
-      const result = await mammoth.extractRawText({
-        path: filePath,
-      });
+    // Clean up parser resources
+    await parser.destroy();
 
-      resumeText = result.value;
-      break;
-    }
-
-    default:
-      throw new Error("Only PDF and DOCX files are supported.");
+    return result.text || "";
+  } catch (error) {
+    console.error("Resume parsing error:", error);
+    throw new Error("Failed to parse resume.");
   }
-
-  return resumeText.trim();
 };
 
 module.exports = {

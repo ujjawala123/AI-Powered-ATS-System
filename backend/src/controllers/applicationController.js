@@ -1,8 +1,6 @@
 const applicationService = require("../services/applicationService");
 
-// ==========================
 // Apply for Job
-// ==========================
 const applyForJob = async (req, res) => {
   try {
     const result = await applicationService.applyForJob(
@@ -20,10 +18,7 @@ const applyForJob = async (req, res) => {
     });
   }
 };
-
-// ==========================
 // Get Applicants By Job
-// ==========================
 const getApplicantsByJob = async (req, res) => {
   try {
     const result =
@@ -40,8 +35,29 @@ const getApplicantsByJob = async (req, res) => {
     });
   }
 };
+// Get Single Application By ID
+const getApplicationById = async (req, res) => {
+  try {
+    const result =
+      await applicationService.getApplicationById(
+        req.params.id,
+        req.user._id,
+        req.user.role
+      );
+
+    return res.status(200).json(result);
+  } catch (error) {
+    return res.status(404).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
+// Export Controllers
 
 module.exports = {
   applyForJob,
   getApplicantsByJob,
+  getApplicationById,
 };

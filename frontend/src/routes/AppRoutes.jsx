@@ -7,14 +7,17 @@ import Login from "../pages/Login";
 import Register from "../pages/Register";
 
 import ApplicantDashboard from "../pages/applicant/ApplicantDashboard";
-import RecruiterDashboard from "../pages/recruiter/RecruiterDashboard";
+import Jobs from "../pages/applicant/Jobs";
+import JobDetails from "../pages/applicant/JobDetails";
+import ApplyJob from "../pages/applicant/ApplyJob";
 
+import RecruiterDashboard from "../pages/recruiter/RecruiterDashboard";
 import PostJob from "../pages/recruiter/PostJob";
 import MyJobs from "../pages/recruiter/MyJobs";
 import ViewJob from "../pages/recruiter/ViewJob";
 import EditJob from "../pages/recruiter/EditJob";
 import Applicants from "../pages/recruiter/Applicants";
-
+import ApplicationDetails from "../pages/recruiter/ApplicationDetails";
 import ProtectedRoute from "../components/ProtectedRoute"; // Change path if needed
 
 const AppRoutes = () => {
@@ -35,11 +38,11 @@ const AppRoutes = () => {
             </ProtectedRoute>
           }
         />
-
+        <Route path="/applicant/jobs"element={<Jobs />}/>
+        <Route path="/applicant/jobs/:id" element={<JobDetails />}/>
+        <Route path="/applicant/jobs/:id/apply" element={<ApplyJob />}/>
         {/* Recruiter */}
-        <Route
-          path="/recruiter/dashboard"
-          element={
+        <Route path="/recruiter/dashboard"element={
             <ProtectedRoute allowedRole="recruiter">
               <RecruiterDashboard />
             </ProtectedRoute>
@@ -89,9 +92,17 @@ const AppRoutes = () => {
     </ProtectedRoute>
   }
 />
+
       </Route>
     </Routes>
-  );
+  );<Route
+  path="/recruiter/applications/:id"
+  element={
+    <ProtectedRoute allowedRole="recruiter">
+      <ApplicationDetails />
+    </ProtectedRoute>
+  }
+/>
 };
 
 export default AppRoutes;
