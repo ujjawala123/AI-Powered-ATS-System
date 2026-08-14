@@ -1,6 +1,19 @@
 const { extractSkills } = require("../utils/extractSkills");
 
-const calculateATSScore = (resumeText, requiredSkills = []) => {
+// Normalize skill names for better matching
+const normalizeSkill = (skill) => {
+  return skill
+    .toLowerCase()
+    .replace(/[.\-_+#]/g, "")
+    .replace(/\s+/g, "")
+    .trim();
+};
+
+// Calculate ATS Score
+const calculateATSScore = (
+  resumeText,
+  requiredSkills = []
+) => {
   if (!resumeText) {
     throw new Error("Resume text is required.");
   }
@@ -11,10 +24,22 @@ const calculateATSScore = (resumeText, requiredSkills = []) => {
   const matchedSkills = [];
   const missingSkills = [];
 
+  // Normalize resume skills once
+  const normalizedResumeSkills = resumeSkills.map(
+    (skill) => ({
+      original: skill,
+      normalized: normalizeSkill(skill),
+    })
+  );
+
   requiredSkills.forEach((skill) => {
-    const found = resumeSkills.some(
+    const normalizedRequiredSkill =
+      normalizeSkill(skill);
+
+    const found = normalizedResumeSkills.some(
       (resumeSkill) =>
-        resumeSkill.toLowerCase() === skill.toLowerCase()
+        resumeSkill.normalized ===
+        normalizedRequiredSkill
     );
 
     if (found) {
@@ -24,11 +49,14 @@ const calculateATSScore = (resumeText, requiredSkills = []) => {
     }
   });
 
+  // Calculate score
   const atsScore =
     requiredSkills.length === 0
       ? 0
       : Math.round(
-          (matchedSkills.length / requiredSkills.length) * 100
+          (matchedSkills.length /
+            requiredSkills.length) *
+            100
         );
 
   return {
