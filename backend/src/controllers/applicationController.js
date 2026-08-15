@@ -1,6 +1,8 @@
 const applicationService = require("../services/applicationService");
 
+// =====================================================
 // Apply for Job
+// =====================================================
 const applyForJob = async (req, res) => {
   try {
     const result = await applicationService.applyForJob(
@@ -18,7 +20,10 @@ const applyForJob = async (req, res) => {
     });
   }
 };
+
+// =====================================================
 // Get Applicants By Job
+// =====================================================
 const getApplicantsByJob = async (req, res) => {
   try {
     const result =
@@ -35,7 +40,10 @@ const getApplicantsByJob = async (req, res) => {
     });
   }
 };
-// Get Single Application By ID
+
+// =====================================================
+// Get Single Application
+// =====================================================
 const getApplicationById = async (req, res) => {
   try {
     const result =
@@ -47,17 +55,60 @@ const getApplicationById = async (req, res) => {
 
     return res.status(200).json(result);
   } catch (error) {
-    return res.status(404).json({
+    return res.status(403).json({
       success: false,
       message: error.message,
     });
   }
 };
 
-// Export Controllers
+// =====================================================
+// Applicant - Get My Applications
+// =====================================================
+const getMyApplications = async (req, res) => {
+  try {
+    const result =
+      await applicationService.getMyApplications(
+        req.user._id
+      );
 
+    return res.status(200).json(result);
+  } catch (error) {
+    return res.status(400).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
+// =====================================================
+// Recruiter - Update Application Status
+// =====================================================
+const updateApplicationStatus = async (req, res) => {
+  try {
+    const result =
+      await applicationService.updateApplicationStatus(
+        req.params.id,
+        req.body.status,
+        req.user._id
+      );
+
+    return res.status(200).json(result);
+  } catch (error) {
+    return res.status(400).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
+// =====================================================
+// Export Controllers
+// =====================================================
 module.exports = {
   applyForJob,
   getApplicantsByJob,
   getApplicationById,
+  getMyApplications,
+  updateApplicationStatus,
 };

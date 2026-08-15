@@ -11,7 +11,8 @@ import ApplicantDashboard from "../pages/applicant/ApplicantDashboard";
 import Jobs from "../pages/applicant/Jobs";
 import JobDetails from "../pages/applicant/JobDetails";
 import ApplyJob from "../pages/applicant/ApplyJob";
-
+import Applications from "../pages/applicant/Applications";
+import ApplicantApplicationDetails from "../pages/applicant/ApplicationDetails";
 // Recruiter
 import RecruiterDashboard from "../pages/recruiter/RecruiterDashboard";
 import PostJob from "../pages/recruiter/PostJob";
@@ -20,6 +21,7 @@ import ViewJob from "../pages/recruiter/ViewJob";
 import EditJob from "../pages/recruiter/EditJob";
 import Applicants from "../pages/recruiter/Applicants";
 import ApplicationDetails from "../pages/recruiter/ApplicationDetails";
+import ApplicationPipeline from "../pages/recruiter/ApplicationPipeline";
 
 import ProtectedRoute from "../components/ProtectedRoute";
 
@@ -91,7 +93,30 @@ const AppRoutes = () => {
             </ProtectedRoute>
           }
         />
-
+      <Route
+  path="/applicant/applications"
+  element={
+    <ProtectedRoute allowedRole="applicant">
+      <Applications />
+    </ProtectedRoute>
+  }
+/>
+<Route
+  path="/applicant/applications/:id"
+  element={
+    <ProtectedRoute allowedRole="applicant">
+      <ApplicationDetails />
+    </ProtectedRoute>
+  }
+/>
+<Route
+  path="/applicant/applications/:id"
+  element={
+    <ProtectedRoute allowedRole="applicant">
+      <ApplicantApplicationDetails />
+    </ProtectedRoute>
+  }
+/>
 
         {/* ==================================================
             RECRUITER
@@ -159,7 +184,14 @@ const AppRoutes = () => {
             </ProtectedRoute>
           }
         />
-
+<Route
+  path="/recruiter/pipeline"
+  element={
+    <ProtectedRoute allowedRole="recruiter">
+      <ApplicationPipeline />
+    </ProtectedRoute>
+  }
+/>
       </Route>
 
     </Routes>

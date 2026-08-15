@@ -83,6 +83,11 @@ const Sidebar = ({ onCollapse }) => {
       path: "/recruiter/profile",
       icon: <FaUser />,
     },
+    {
+      name: "Application Pipeline",
+      path: "/recruiter/pipeline",
+      icon: <FaUsers />,
+    }
   ];
 
   const links = isRecruiter

@@ -6,6 +6,8 @@ const {
   applyForJob,
   getApplicantsByJob,
   getApplicationById,
+  getMyApplications,
+  updateApplicationStatus,
 } = require("../controllers/applicationController");
 
 const {
@@ -27,7 +29,17 @@ router.post(
 );
 
 // =====================================================
-// Recruiter gets applicants for a job
+// Applicant - Get My Applications
+// =====================================================
+router.get(
+  "/my-applications",
+  protect,
+  authorize("applicant"),
+  getMyApplications
+);
+
+// =====================================================
+// Recruiter - Get Applicants For A Job
 // =====================================================
 router.get(
   "/job/:jobId",
@@ -37,13 +49,23 @@ router.get(
 );
 
 // =====================================================
-// Recruiter gets single application
+// Applicant + Recruiter - Get Single Application
 // =====================================================
 router.get(
   "/:id",
   protect,
-  authorize("recruiter"),
+  authorize("applicant", "recruiter"),
   getApplicationById
+);
+
+// =====================================================
+// Recruiter - Update Application Status
+// =====================================================
+router.patch(
+  "/:id/status",
+  protect,
+  authorize("recruiter"),
+  updateApplicationStatus
 );
 
 module.exports = router;
