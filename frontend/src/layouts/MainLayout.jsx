@@ -5,29 +5,38 @@ import Navbar from "../components/Navbar";
 import Sidebar from "../components/Sidebar";
 
 const MainLayout = () => {
-  const [sidebarCollapsed, setSidebarCollapsed] =
-    useState(false);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
 
   return (
     <div className="min-h-screen bg-[#0F0F10] text-white">
 
-      {/* Sidebar */}
+      {/* ==========================================
+          Sidebar
+      ========================================== */}
+
       <Sidebar
         onCollapse={setSidebarCollapsed}
       />
 
-      {/* Navbar */}
+      {/* ==========================================
+          Fixed Navbar
+      ========================================== */}
+
       <Navbar
         sidebarCollapsed={sidebarCollapsed}
       />
 
-      {/* Main Content */}
+      {/* ==========================================
+          Main Content
+      ========================================== */}
+
       <main
         className={`
-          pt-16
           min-h-screen
+          pt-16
           transition-all
           duration-300
+          ease-in-out
           ${
             sidebarCollapsed
               ? "ml-20"

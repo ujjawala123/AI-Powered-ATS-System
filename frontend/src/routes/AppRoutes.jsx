@@ -6,11 +6,13 @@ import Landing from "../pages/Landing";
 import Login from "../pages/Login";
 import Register from "../pages/Register";
 
+// Applicant
 import ApplicantDashboard from "../pages/applicant/ApplicantDashboard";
 import Jobs from "../pages/applicant/Jobs";
 import JobDetails from "../pages/applicant/JobDetails";
 import ApplyJob from "../pages/applicant/ApplyJob";
 
+// Recruiter
 import RecruiterDashboard from "../pages/recruiter/RecruiterDashboard";
 import PostJob from "../pages/recruiter/PostJob";
 import MyJobs from "../pages/recruiter/MyJobs";
@@ -18,18 +20,42 @@ import ViewJob from "../pages/recruiter/ViewJob";
 import EditJob from "../pages/recruiter/EditJob";
 import Applicants from "../pages/recruiter/Applicants";
 import ApplicationDetails from "../pages/recruiter/ApplicationDetails";
-import ProtectedRoute from "../components/ProtectedRoute"; // Change path if needed
+
+import ProtectedRoute from "../components/ProtectedRoute";
 
 const AppRoutes = () => {
   return (
     <Routes>
-      <Route element={<MainLayout />}>
-        {/* Public Routes */}
-        <Route path="/" element={<Landing />} />
-        <Route path="/login" element={<Login />} />
-        <Route path="/register" element={<Register />} />
 
-        {/* Applicant */}
+      {/* ==================================================
+          PUBLIC ROUTES
+          No Navbar / No Sidebar
+      ================================================== */}
+
+      <Route path="/" element={<Landing />} />
+
+      <Route
+        path="/login"
+        element={<Login />}
+      />
+
+      <Route
+        path="/register"
+        element={<Register />}
+      />
+
+
+      {/* ==================================================
+          AUTHENTICATED ROUTES
+          MainLayout contains Navbar + Sidebar
+      ================================================== */}
+
+      <Route element={<MainLayout />}>
+
+        {/* ==================================================
+            APPLICANT
+        ================================================== */}
+
         <Route
           path="/applicant/dashboard"
           element={
@@ -38,11 +64,42 @@ const AppRoutes = () => {
             </ProtectedRoute>
           }
         />
-        <Route path="/applicant/jobs"element={<Jobs />}/>
-        <Route path="/applicant/jobs/:id" element={<JobDetails />}/>
-        <Route path="/applicant/jobs/:id/apply" element={<ApplyJob />}/>
-        {/* Recruiter */}
-        <Route path="/recruiter/dashboard"element={
+
+        <Route
+          path="/applicant/jobs"
+          element={
+            <ProtectedRoute allowedRole="applicant">
+              <Jobs />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/applicant/jobs/:id"
+          element={
+            <ProtectedRoute allowedRole="applicant">
+              <JobDetails />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/applicant/jobs/:id/apply"
+          element={
+            <ProtectedRoute allowedRole="applicant">
+              <ApplyJob />
+            </ProtectedRoute>
+          }
+        />
+
+
+        {/* ==================================================
+            RECRUITER
+        ================================================== */}
+
+        <Route
+          path="/recruiter/dashboard"
+          element={
             <ProtectedRoute allowedRole="recruiter">
               <RecruiterDashboard />
             </ProtectedRoute>
@@ -84,25 +141,29 @@ const AppRoutes = () => {
             </ProtectedRoute>
           }
         />
+
         <Route
-  path="/recruiter/jobs/:id/applicants"
-  element={
-    <ProtectedRoute allowedRole="recruiter">
-      <Applicants />
-    </ProtectedRoute>
-  }
-/>
+          path="/recruiter/jobs/:id/applicants"
+          element={
+            <ProtectedRoute allowedRole="recruiter">
+              <Applicants />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/recruiter/applications/:id"
+          element={
+            <ProtectedRoute allowedRole="recruiter">
+              <ApplicationDetails />
+            </ProtectedRoute>
+          }
+        />
 
       </Route>
+
     </Routes>
-  );<Route
-  path="/recruiter/applications/:id"
-  element={
-    <ProtectedRoute allowedRole="recruiter">
-      <ApplicationDetails />
-    </ProtectedRoute>
-  }
-/>
+  );
 };
 
 export default AppRoutes;

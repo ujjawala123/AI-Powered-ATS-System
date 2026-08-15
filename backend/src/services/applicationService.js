@@ -3,6 +3,9 @@ const Job = require("../models/Job");
 
 const { parseResume } = require("./resumeParser");
 const { calculateATSScore } = require("./atsService");
+
+const { generateAISummary } = require("./geminiService");
+
 const {
   extractCandidateDetails,
 } = require("../utils/extractCandidateDetails");
@@ -25,7 +28,9 @@ const applyForJob = async (
 
   // Check if job is open
   if (job.status !== "Open") {
-    throw new Error("This job is no longer accepting applications.");
+    throw new Error(
+      "This job is no longer accepting applications."
+    );
   }
 
   // Prevent duplicate applications
@@ -40,32 +45,59 @@ const applyForJob = async (
     );
   }
 
-  // Parse resume
+  // =====================================================
+  // Parse Resume
+  // =====================================================
+
   const resumeText = resumeFile
     ? await parseResume(resumeFile)
     : "";
 
-  // Extract candidate details
+  // =====================================================
+  // Extract Candidate Details
+  // =====================================================
+
   const candidate = extractCandidateDetails(resumeText);
 
-  // Calculate ATS score
+  // =====================================================
+  // ATS Score
+  // =====================================================
+
   const atsResult = calculateATSScore(
     resumeText,
     job.skills || []
   );
 
-  // Temporary AI summary
-  const aiSummary = `
-ATS Score: ${atsResult.atsScore}%
+  // =====================================================
+  // Gemini AI Analysis
+  // =====================================================
 
-Matched Skills:
-${atsResult.matchedSkills.join(", ") || "None"}
+  let aiSummary = "";
 
-Missing Skills:
-${atsResult.missingSkills.join(", ") || "None"}
-  `.trim();
+  try {
+    aiSummary = await generateAISummary({
+      resumeText,
+      jobTitle: job.title,
+      jobDescription: job.description,
+      matchedSkills: atsResult.matchedSkills,
+      missingSkills: atsResult.missingSkills,
+      atsScore: atsResult.atsScore,
+    });
+  } catch (error) {
+    console.error(
+      "Gemini AI Analysis Error:",
+      error.message
+    );
 
-  // Create application
+    // Don't stop application submission if AI fails
+    aiSummary =
+      "AI analysis could not be generated at this time.";
+  }
+
+  // =====================================================
+  // Create Application
+  // =====================================================
+
   const application = await Application.create({
     candidate: applicantId,
     job: jobId,
@@ -81,7 +113,9 @@ ${atsResult.missingSkills.join(", ") || "None"}
     candidatePhone: candidate?.phone || "",
 
     matchScore: atsResult.atsScore,
+
     matchedSkills: atsResult.matchedSkills,
+
     missingSkills: atsResult.missingSkills,
 
     aiSummary,
@@ -103,7 +137,6 @@ const getApplicantsByJob = async (
   jobId,
   recruiterId
 ) => {
-  // Make sure the job belongs to this recruiter
   const job = await Job.findOne({
     _id: jobId,
     postedBy: recruiterId,
@@ -120,7 +153,10 @@ const getApplicantsByJob = async (
   })
     .populate("candidate", "name email")
     .populate("job", "title company")
-    .sort({ matchScore: -1, createdAt: -1 });
+    .sort({
+      matchScore: -1,
+      createdAt: -1,
+    });
 
   return {
     success: true,
@@ -140,14 +176,16 @@ const getApplicationById = async (
     applicationId
   )
     .populate("candidate", "name email")
-    .populate("job", "title company postedBy");
+    .populate(
+      "job",
+      "title company postedBy"
+    );
 
   if (!application) {
     throw new Error("Application not found.");
   }
 
-  // Recruiter can only view applications
-  // belonging to their own jobs
+  // Recruiter authorization
   if (userRole === "recruiter") {
     if (
       !application.job ||
@@ -160,7 +198,7 @@ const getApplicationById = async (
     }
   }
 
-  // Applicant can only view their own application
+  // Applicant authorization
   if (userRole === "applicant") {
     if (
       application.candidate._id.toString() !==
@@ -195,18 +233,22 @@ const updateApplicationStatus = async (
   ];
 
   if (!allowedStatuses.includes(status)) {
-    throw new Error("Invalid application status.");
+    throw new Error(
+      "Invalid application status."
+    );
   }
 
   const application = await Application.findById(
     applicationId
-  ).populate("job", "title company postedBy");
+  ).populate(
+    "job",
+    "title company postedBy"
+  );
 
   if (!application) {
     throw new Error("Application not found.");
   }
 
-  // Check recruiter owns the job
   if (
     application.job.postedBy.toString() !==
     recruiterId.toString()
@@ -222,7 +264,8 @@ const updateApplicationStatus = async (
 
   return {
     success: true,
-    message: "Application status updated successfully.",
+    message:
+      "Application status updated successfully.",
     data: application,
   };
 };
@@ -230,12 +273,19 @@ const updateApplicationStatus = async (
 // =====================================================
 // Get Applicant's Applications
 // =====================================================
-const getMyApplications = async (applicantId) => {
+const getMyApplications = async (
+  applicantId
+) => {
   const applications = await Application.find({
     candidate: applicantId,
   })
-    .populate("job", "title company location employmentType")
-    .sort({ createdAt: -1 });
+    .populate(
+      "job",
+      "title company location employmentType"
+    )
+    .sort({
+      createdAt: -1,
+    });
 
   return {
     success: true,
