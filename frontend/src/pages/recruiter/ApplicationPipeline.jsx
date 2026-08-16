@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { getMyJobs } from "../../services/jobService";
 import {
   FaEye,
   FaUser,
@@ -10,6 +9,7 @@ import {
 } from "react-icons/fa";
 import { toast } from "react-toastify";
 
+import { getMyJobs } from "../../services/jobService";
 import api from "../../services/api";
 
 const statuses = [
@@ -23,55 +23,110 @@ const statuses = [
 const ApplicationPipeline = () => {
   const [applications, setApplications] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [updatingId, setUpdatingId] = useState(null);
 
   useEffect(() => {
     fetchApplications();
   }, []);
 
- const fetchApplications = async () => {
-  try {
-    setLoading(true);
+  // =====================================================
+  // Fetch all applications from recruiter's jobs
+  // =====================================================
+  const fetchApplications = async () => {
+    try {
+      setLoading(true);
 
-    const jobsResponse = await getMyJobs();
+      const jobsResponse = await getMyJobs();
+      const jobs = jobsResponse.data || [];
 
-    const jobs = jobsResponse.data || [];
+      let allApplications = [];
 
-    let allApplications = [];
+      for (const job of jobs) {
+        try {
+          const response = await api.get(
+            `/applications/job/${job._id}`
+          );
 
-    for (const job of jobs) {
-      try {
-        const response = await api.get(
-          `/applications/job/${job._id}`
-        );
+          const jobApplications =
+            response.data.data || [];
 
-        const jobApplications =
-          response.data.data || [];
-
-        allApplications = [
-          ...allApplications,
-          ...jobApplications,
-        ];
-      } catch (error) {
-        console.error(
-          `Failed to load applications for job ${job._id}`,
-          error
-        );
+          allApplications = [
+            ...allApplications,
+            ...jobApplications,
+          ];
+        } catch (error) {
+          console.error(
+            `Failed to load applications for job ${job._id}`,
+            error
+          );
+        }
       }
+
+      setApplications(allApplications);
+    } catch (error) {
+      console.error(error);
+
+      toast.error(
+        error.response?.data?.message ||
+          "Failed to load application pipeline."
+      );
+    } finally {
+      setLoading(false);
     }
+  };
 
-    setApplications(allApplications);
-  } catch (error) {
-    console.error(error);
+  // =====================================================
+  // Update application status
+  // =====================================================
+  const handleStatusChange = async (
+    applicationId,
+    newStatus
+  ) => {
+    try {
+      setUpdatingId(applicationId);
 
-    toast.error(
-      error.response?.data?.message ||
-        "Failed to load application pipeline."
-    );
-  } finally {
-    setLoading(false);
-  }
-};
+      const response = await api.patch(
+        `/applications/${applicationId}/status`,
+        {
+          status: newStatus,
+        }
+      );
 
+      const updatedApplication =
+        response.data.data;
+
+      // Update UI immediately
+      setApplications((previousApplications) =>
+        previousApplications.map((application) =>
+          application._id === applicationId
+            ? {
+                ...application,
+                status:
+                  updatedApplication.status ||
+                  newStatus,
+              }
+            : application
+        )
+      );
+
+      toast.success(
+        `Application moved to ${newStatus}.`
+      );
+    } catch (error) {
+      console.error(error);
+
+      toast.error(
+        error.response?.data?.message ||
+          "Failed to update application status."
+      );
+    } finally {
+      setUpdatingId(null);
+    }
+  };
+
+  // =====================================================
+  // Filter applications by status
+  // =====================================================
   const getApplicationsByStatus = (status) => {
     return applications.filter(
       (application) =>
@@ -79,6 +134,9 @@ const ApplicationPipeline = () => {
     );
   };
 
+  // =====================================================
+  // Column styles
+  // =====================================================
   const getStatusStyle = (status) => {
     switch (status) {
       case "Applied":
@@ -101,6 +159,9 @@ const ApplicationPipeline = () => {
     }
   };
 
+  // =====================================================
+  // Status text styles
+  // =====================================================
   const getStatusTextStyle = (status) => {
     switch (status) {
       case "Applied":
@@ -123,6 +184,9 @@ const ApplicationPipeline = () => {
     }
   };
 
+  // =====================================================
+  // Loading
+  // =====================================================
   if (loading) {
     return (
       <div className="min-h-screen bg-[#0F0F10] text-white flex items-center justify-center">
@@ -139,10 +203,11 @@ const ApplicationPipeline = () => {
 
   return (
     <div className="min-h-screen bg-[#0F0F10] text-white p-6 md:p-8">
-
       <div className="max-w-[1600px] mx-auto">
 
-        {/* Header */}
+        {/* =====================================================
+            Header
+        ===================================================== */}
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8">
 
           <div>
@@ -179,7 +244,9 @@ const ApplicationPipeline = () => {
 
         </div>
 
-        {/* Summary */}
+        {/* =====================================================
+            Summary
+        ===================================================== */}
         <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-8">
 
           {statuses.map((status) => (
@@ -211,18 +278,12 @@ const ApplicationPipeline = () => {
 
         </div>
 
-        {/* Pipeline */}
-        <div
-          className="
-            flex
-            gap-5
-            overflow-x-auto
-            pb-6
-          "
-        >
+        {/* =====================================================
+            Pipeline
+        ===================================================== */}
+        <div className="flex gap-5 overflow-x-auto pb-6">
 
           {statuses.map((status) => {
-
             const statusApplications =
               getApplicationsByStatus(status);
 
@@ -257,22 +318,21 @@ const ApplicationPipeline = () => {
                 <div className="space-y-4">
 
                   {statusApplications.length === 0 ? (
-
-                    <div className="
-                      border
-                      border-dashed
-                      border-zinc-800
-                      rounded-xl
-                      p-8
-                      text-center
-                    ">
+                    <div
+                      className="
+                        border
+                        border-dashed
+                        border-zinc-800
+                        rounded-xl
+                        p-8
+                        text-center
+                      "
+                    >
                       <p className="text-sm text-zinc-600">
                         No applications
                       </p>
                     </div>
-
                   ) : (
-
                     statusApplications.map(
                       (application) => {
 
@@ -304,19 +364,23 @@ const ApplicationPipeline = () => {
                             "
                           >
 
-                            {/* Candidate */}
+                            {/* =================================================
+                                Candidate
+                            ================================================= */}
                             <div className="flex items-start gap-3">
 
-                              <div className="
-                                w-10
-                                h-10
-                                rounded-lg
-                                bg-cyan-500/10
-                                flex
-                                items-center
-                                justify-center
-                                shrink-0
-                              ">
+                              <div
+                                className="
+                                  w-10
+                                  h-10
+                                  rounded-lg
+                                  bg-cyan-500/10
+                                  flex
+                                  items-center
+                                  justify-center
+                                  shrink-0
+                                "
+                              >
                                 <FaUser className="text-cyan-400" />
                               </div>
 
@@ -334,15 +398,19 @@ const ApplicationPipeline = () => {
 
                             </div>
 
-                            {/* Email */}
-                            <div className="
-                              flex
-                              items-center
-                              gap-2
-                              mt-4
-                              text-xs
-                              text-zinc-500
-                            ">
+                            {/* =================================================
+                                Email
+                            ================================================= */}
+                            <div
+                              className="
+                                flex
+                                items-center
+                                gap-2
+                                mt-4
+                                text-xs
+                                text-zinc-500
+                              "
+                            >
                               <FaEnvelope />
 
                               <span className="truncate">
@@ -350,39 +418,109 @@ const ApplicationPipeline = () => {
                               </span>
                             </div>
 
-                            {/* ATS Score */}
-                            <div className="
-                              flex
-                              items-center
-                              justify-between
-                              mt-5
-                              pt-4
-                              border-t
-                              border-zinc-800
-                            ">
-
-                              <div className="
+                            {/* =================================================
+                                ATS Score
+                            ================================================= */}
+                            <div
+                              className="
                                 flex
                                 items-center
-                                gap-2
-                                text-sm
-                                text-zinc-500
-                              ">
-                                <FaChartLine />
+                                justify-between
+                                mt-5
+                                pt-4
+                                border-t
+                                border-zinc-800
+                              "
+                            >
 
+                              <div
+                                className="
+                                  flex
+                                  items-center
+                                  gap-2
+                                  text-sm
+                                  text-zinc-500
+                                "
+                              >
+                                <FaChartLine />
                                 ATS Score
                               </div>
 
-                              <span className="
-                                font-bold
-                                text-cyan-400
-                              ">
+                              <span className="font-bold text-cyan-400">
                                 {application.matchScore || 0}%
                               </span>
 
                             </div>
 
-                            {/* View */}
+                            {/* =================================================
+                                Update Status
+                            ================================================= */}
+                            <div className="mt-4">
+
+                              <label className="block text-xs text-zinc-500 mb-2">
+                                Application Status
+                              </label>
+
+                              <select
+                                value={
+                                  application.status ||
+                                  "Applied"
+                                }
+                                disabled={
+                                  updatingId ===
+                                  application._id
+                                }
+                                onChange={(event) =>
+                                  handleStatusChange(
+                                    application._id,
+                                    event.target.value
+                                  )
+                                }
+                                className="
+                                  w-full
+                                  bg-zinc-800
+                                  border
+                                  border-zinc-700
+                                  text-white
+                                  px-3
+                                  py-2
+                                  rounded-lg
+                                  text-sm
+                                  outline-none
+                                  focus:border-cyan-500
+                                  disabled:opacity-50
+                                  disabled:cursor-not-allowed
+                                "
+                              >
+                                {statuses.map(
+                                  (statusOption) => (
+                                    <option
+                                      key={
+                                        statusOption
+                                      }
+                                      value={
+                                        statusOption
+                                      }
+                                    >
+                                      {statusOption}
+                                    </option>
+                                  )
+                                )}
+                              </select>
+
+                              {updatingId ===
+                                application._id && (
+                                <div className="flex items-center gap-2 mt-2 text-xs text-zinc-500">
+                                  <FaSyncAlt className="animate-spin" />
+                                  Updating status...
+                                </div>
+                              )}
+
+                            </div>
+
+                            {/* =================================================
+                                View Application
+                            ================================================= */}
                             <Link
                               to={`/recruiter/applications/${application._id}`}
                               className="
@@ -410,7 +548,6 @@ const ApplicationPipeline = () => {
                         );
                       }
                     )
-
                   )}
 
                 </div>
@@ -422,7 +559,6 @@ const ApplicationPipeline = () => {
         </div>
 
       </div>
-
     </div>
   );
 };
