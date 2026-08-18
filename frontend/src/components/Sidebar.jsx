@@ -11,6 +11,7 @@ import {
   FaPlus,
   FaUsers,
   FaTimes,
+  FaChartLine,
 } from "react-icons/fa";
 
 const Sidebar = ({ onCollapse }) => {
@@ -39,6 +40,10 @@ const Sidebar = ({ onCollapse }) => {
     navigate("/login");
   };
 
+  // =====================================================
+  // Applicant Navigation
+  // =====================================================
+
   const applicantLinks = [
     {
       name: "Dashboard",
@@ -61,6 +66,10 @@ const Sidebar = ({ onCollapse }) => {
       icon: <FaUser />,
     },
   ];
+
+  // =====================================================
+  // Recruiter Navigation
+  // =====================================================
 
   const recruiterLinks = [
     {
@@ -87,7 +96,12 @@ const Sidebar = ({ onCollapse }) => {
       name: "Application Pipeline",
       path: "/recruiter/pipeline",
       icon: <FaUsers />,
-    }
+    },
+    {
+      name: "Candidate Ranking",
+      path: "/recruiter/candidate-ranking",
+      icon: <FaChartLine />,
+    },
   ];
 
   const links = isRecruiter
@@ -103,7 +117,8 @@ const Sidebar = ({ onCollapse }) => {
         bottom-0
         z-50
         bg-[#111113]
-        border-r border-zinc-800
+        border-r
+        border-zinc-800
         transition-all
         duration-300
         flex
@@ -111,8 +126,10 @@ const Sidebar = ({ onCollapse }) => {
         ${collapsed ? "w-20" : "w-64"}
       `}
     >
+      {/* =====================================================
+          Logo / Collapse Button
+      ===================================================== */}
 
-      {/* Logo / Collapse */}
       <div
         className={`
           h-16
@@ -123,7 +140,6 @@ const Sidebar = ({ onCollapse }) => {
           ${collapsed ? "justify-center" : "justify-between px-5"}
         `}
       >
-
         {!collapsed && (
           <div>
             <h1 className="text-xl font-bold tracking-wide text-white">
@@ -138,25 +154,47 @@ const Sidebar = ({ onCollapse }) => {
 
         <button
           onClick={handleCollapse}
-          className="w-9 h-9 flex items-center justify-center rounded-lg text-zinc-400 hover:text-white hover:bg-zinc-800 transition"
-          title={collapsed ? "Expand sidebar" : "Collapse sidebar"}
+          className="
+            w-9
+            h-9
+            flex
+            items-center
+            justify-center
+            rounded-lg
+            text-zinc-400
+            hover:text-white
+            hover:bg-zinc-800
+            transition
+          "
+          title={
+            collapsed
+              ? "Expand sidebar"
+              : "Collapse sidebar"
+          }
         >
           {collapsed ? <FaBars /> : <FaTimes />}
         </button>
-
       </div>
 
-      {/* Navigation */}
-      <div className="flex-1 px-3 py-6 overflow-y-auto">
+      {/* =====================================================
+          Navigation
+      ===================================================== */}
 
+      <div className="flex-1 px-3 py-6 overflow-y-auto">
         {!collapsed && (
-          <p className="text-[11px] uppercase tracking-wider text-zinc-600 px-3 mb-3">
+          <p className="
+            text-[11px]
+            uppercase
+            tracking-wider
+            text-zinc-600
+            px-3
+            mb-3
+          ">
             {isRecruiter ? "Recruiter" : "Applicant"}
           </p>
         )}
 
         <div className="space-y-2">
-
           {links.map((link) => (
             <NavLink
               key={link.path}
@@ -169,11 +207,13 @@ const Sidebar = ({ onCollapse }) => {
                 rounded-xl
                 transition-all
                 duration-200
+
                 ${
                   collapsed
                     ? "justify-center px-3 py-3"
                     : "gap-4 px-4 py-3"
                 }
+
                 ${
                   isActive
                     ? "bg-cyan-500/10 text-cyan-400 border border-cyan-500/20"
@@ -183,8 +223,12 @@ const Sidebar = ({ onCollapse }) => {
               }
               title={collapsed ? link.name : ""}
             >
-
-              <span className="text-lg min-w-[20px] flex justify-center">
+              <span className="
+                text-lg
+                min-w-[20px]
+                flex
+                justify-center
+              ">
                 {link.icon}
               </span>
 
@@ -193,17 +237,20 @@ const Sidebar = ({ onCollapse }) => {
                   {link.name}
                 </span>
               )}
-
             </NavLink>
           ))}
-
         </div>
-
       </div>
 
-      {/* Logout */}
-      <div className="p-3 border-t border-zinc-800">
+      {/* =====================================================
+          Logout
+      ===================================================== */}
 
+      <div className="
+        p-3
+        border-t
+        border-zinc-800
+      ">
         <button
           onClick={handleLogout}
           className={`
@@ -215,6 +262,7 @@ const Sidebar = ({ onCollapse }) => {
             hover:text-red-400
             hover:bg-red-500/10
             transition
+
             ${
               collapsed
                 ? "justify-center px-3 py-3"
@@ -223,7 +271,6 @@ const Sidebar = ({ onCollapse }) => {
           `}
           title={collapsed ? "Logout" : ""}
         >
-
           <FaSignOutAlt className="text-lg" />
 
           {!collapsed && (
@@ -231,11 +278,8 @@ const Sidebar = ({ onCollapse }) => {
               Logout
             </span>
           )}
-
         </button>
-
       </div>
-
     </aside>
   );
 };

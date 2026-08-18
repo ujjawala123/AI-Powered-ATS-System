@@ -7,14 +7,16 @@ import {
   FaTimesCircle,
   FaBriefcase,
   FaRobot,
+  FaCalendarAlt,
 } from "react-icons/fa";
 import { toast } from "react-toastify";
+import { useNavigate } from "react-router-dom";
 
 import api from "../../services/api";
 
 const ApplicationDetails = () => {
   const { id } = useParams();
-
+  const navigate = useNavigate();
   const [application, setApplication] = useState(null);
   const [loading, setLoading] = useState(true);
 
@@ -94,8 +96,8 @@ const ApplicationDetails = () => {
   // ==========================================
 
   const candidateName =
-    application.candidateName ||
     application.candidate?.name ||
+    application.candidateName ||
     "Unknown Candidate";
 
   const candidateEmail =
@@ -224,6 +226,42 @@ const ApplicationDetails = () => {
 
           </div>
 
+{/* ==========================================
+    Schedule Interview
+========================================== */}
+
+{application.status !== "Rejected" &&
+ application.status !== "Offered" && (
+  <div className="flex justify-end mb-6">
+
+    <button
+      type="button"
+      onClick={() =>
+        navigate(
+          `/recruiter/applications/${application._id}/schedule-interview`
+        )
+      }
+      className="
+        inline-flex
+        items-center
+        justify-center
+        gap-2
+        bg-cyan-500
+        hover:bg-cyan-400
+        text-black
+        px-5
+        py-3
+        rounded-xl
+        font-semibold
+        transition
+      "
+    >
+      <FaCalendarAlt />
+      Schedule Interview
+    </button>
+
+  </div>
+)}
 
           <span
             className={`

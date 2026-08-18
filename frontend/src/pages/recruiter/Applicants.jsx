@@ -98,8 +98,9 @@ const Applicants = () => {
             {applications.map((application) => {
 
               const candidateName =
-                application.candidateName ||
                 application.candidate?.name ||
+                application.candidateName ||
+                
                 "Unknown Candidate";
 
               const candidateEmail =

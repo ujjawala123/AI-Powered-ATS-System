@@ -23,20 +23,27 @@ const applicationSchema = new mongoose.Schema(
       type: String,
       default: "",
     },
+
     candidateName: {
-  type: String,
-  default: "",
-},
+      type: String,
+      default: "",
+    },
 
-candidateEmail: {
-  type: String,
-  default: "",
-},
+    candidateEmail: {
+      type: String,
+      default: "",
+    },
 
-candidatePhone: {
-  type: String,
-  default: "",
-},
+    candidatePhone: {
+      type: String,
+      default: "",
+    },
+
+    // Candidate experience in years
+    experience: {
+      type: Number,
+      default: 0,
+    },
 
     status: {
       type: String,
@@ -49,7 +56,25 @@ candidatePhone: {
       ],
       default: "Applied",
     },
+interviewDate: {
+  type: Date,
+  default: null,
+},
 
+interviewTime: {
+  type: String,
+  default: "",
+},
+
+interviewLink: {
+  type: String,
+  default: "",
+},
+
+interviewNotes: {
+  type: String,
+  default: "",
+},
     matchScore: {
       type: Number,
       default: 0,
@@ -77,4 +102,7 @@ candidatePhone: {
   }
 );
 
-module.exports = mongoose.model("Application", applicationSchema);
+module.exports = mongoose.model(
+  "Application",
+  applicationSchema
+);

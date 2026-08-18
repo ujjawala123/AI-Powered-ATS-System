@@ -337,8 +337,8 @@ const ApplicationPipeline = () => {
                       (application) => {
 
                         const candidateName =
-                          application.candidateName ||
                           application.candidate?.name ||
+                          application.candidateName ||
                           "Unknown Candidate";
 
                         const candidateEmail =

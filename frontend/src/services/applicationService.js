@@ -38,3 +38,25 @@ export const getApplicationById = async (id) => {
 
   return response.data;
 };
+
+// ===============================
+// Applicant - Get My Applications
+// ===============================
+export const getMyApplications = async () => {
+  const response = await api.get(
+    `/applications/my-applications`
+  );
+
+  return response.data;
+};
+
+// ===============================
+// Recruiter - Dashboard
+// ===============================
+export const getRecruiterDashboard = async () => {
+  const response = await api.get(
+    `/applications/recruiter/dashboard`
+  );
+
+  return response.data;
+};

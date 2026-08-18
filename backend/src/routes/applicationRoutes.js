@@ -8,6 +8,9 @@ const {
   getApplicationById,
   getMyApplications,
   updateApplicationStatus,
+  getCandidateRanking,
+  scheduleInterview,
+  getRecruiterDashboard,
 } = require("../controllers/applicationController");
 
 const {
@@ -37,6 +40,24 @@ router.get(
   authorize("applicant"),
   getMyApplications
 );
+// =====================================================
+// Recruiter - Schedule Interview
+// =====================================================
+router.post(
+  "/:id/schedule-interview",
+  protect,
+  authorize("recruiter"),
+  scheduleInterview
+);
+// =====================================================
+// Recruiter - Candidate Ranking
+// =====================================================
+router.get(
+  "/ranking",
+  protect,
+  authorize("recruiter"),
+  getCandidateRanking
+);
 
 // =====================================================
 // Recruiter - Get Applicants For A Job
@@ -47,7 +68,16 @@ router.get(
   authorize("recruiter"),
   getApplicantsByJob
 );
+// =====================================================
+// Recruiter - Dashboard
+// =====================================================
 
+router.get(
+  "/recruiter/dashboard",
+  protect,
+  authorize("recruiter"),
+  getRecruiterDashboard
+);
 // =====================================================
 // Applicant + Recruiter - Get Single Application
 // =====================================================
